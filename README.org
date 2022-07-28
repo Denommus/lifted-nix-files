@@ -1,0 +1,16 @@
+* Nix environments for Lifted Initiative
+
+** How to use this repository
+
+If you just want to build many-rs from master, execute the command
+
+#+begin_src sh
+  nix build github:denommus/lifted-nix-files:many-rs
+#+end_src
+
+If you want to boot a sandbox to work with many-rs (be sure to have
+cloned [[https://github.com/liftedinit/many-rs][the repo]]! and ~cd~ into it!)
+
+#+begin_src sh
+  nix develop github:denommus/lifted-nix-files:many-rs
+#+end_src
