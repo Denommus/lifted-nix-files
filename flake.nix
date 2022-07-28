@@ -88,6 +88,9 @@
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
         ];
+        buildInputs = [
+          pkgs.pkg-config
+        ];
       };
       many-framework = pkgs.many-framework-pkgs.workspaceShell {
         shellHook = ''
