@@ -82,12 +82,20 @@
     };
     devShells = {
       many-rs = pkgs.many-rs-pkgs.workspaceShell {
-        LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+        shellHook = ''
+          export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
+        '';
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
         ];
       };
       many-framework = pkgs.many-framework-pkgs.workspaceShell {
+        shellHook = ''
+          export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
+        '';
+        nativeBuildInputs = [
+          pkgs.llvmPackages.libcxxClang
+        ];
       };
     };
   });
