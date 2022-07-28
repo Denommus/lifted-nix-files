@@ -89,7 +89,7 @@
           pkgs.llvmPackages.libcxxClang
         ];
         buildInputs = [
-          pkgs.pkg-config
+          pkgs.rust-analyzer
         ];
       };
       many-framework = pkgs.many-framework-pkgs.workspaceShell {
@@ -98,6 +98,9 @@
         '';
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
+        ];
+        buildInputs = [
+          pkgs.rust-analyzer
         ];
       };
     };
