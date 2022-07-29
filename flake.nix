@@ -12,7 +12,7 @@
   let
     many-rs-rev = "20541988a8722a9bd10e2bcf3cb84dc17e1775e4";
     many-framework-rev = "a8804085bcc28b75ac8333622f217e0da13bc577";
-    rust-overrides = [
+    rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
         name = "cryptoki-sys";
         overrideAttrs = drv: {
@@ -57,7 +57,7 @@
               rev = many-rs-rev;
               sha256 = "sha256-f6ULbOt3mb5IBeaXWDqttPWBWH1/0r3URFJ+HQVtcNs=";
             };
-            packageOverrides = pkgs: final.rustBuilder.overrides.all ++ rust-overrides;
+            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
 
           many-framework-pkgs = pkgs.rustBuilder.makePackageSet {
@@ -70,7 +70,7 @@
               rev = many-framework-rev;
               sha256 = "sha256-RY5cqa35J+Cmps8LG4Evvq6cH0oJkrOLhoWwdMJymMk=";
             };
-            packageOverrides = pkgs: final.rustBuilder.overrides.all ++ rust-overrides;
+            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
         })
       ];
@@ -92,7 +92,7 @@
           pkgs.rust-analyzer
         ];
       };
-      many-framework = pkgs.many-framework-pkgs.workspaceShell {
+      many-framework = (pkgs.many-framework-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
@@ -102,7 +102,11 @@
         buildInputs = [
           pkgs.rust-analyzer
         ];
-      };
+      }).overrideAttrs (final: prev:  {
+        # Workaround for bug in cargo2nix
+        # See https://github.com/cargo2nix/cargo2nix/issues/238
+        propagatedBuildInputs = [];
+      });
     };
   });
 }
