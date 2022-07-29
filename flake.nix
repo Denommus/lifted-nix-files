@@ -105,7 +105,7 @@
       }).overrideAttrs (final: prev:  {
         # Workaround for bug in cargo2nix
         # See https://github.com/cargo2nix/cargo2nix/issues/238
-        propagatedBuildInputs = [];
+        propagatedBuildInputs = pkgs.lib.attrsets.attrValues (builtins.listToAttrs (builtins.map (x: { name = x.name; value = x; }) prev.propagatedBuildInputs));
       });
     };
   });
