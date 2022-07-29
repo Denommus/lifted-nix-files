@@ -5,13 +5,30 @@
     nixpkgs.follows = "cargo2nix/nixpkgs";
     rust-overlay.url = "github:oxalica/rust-overlay";
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
+    naersk.url = "github:nix-community/naersk";
+    mozillapkgs = {
+      url = "github:mozilla/nixpkgs-mozilla";
+      flake = false;
+    };
   };
 
-  outputs = { cargo2nix, flake-utils, nixpkgs, ... }:
+  outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
     many-rs-rev = "20541988a8722a9bd10e2bcf3cb84dc17e1775e4";
     many-framework-rev = "a8804085bcc28b75ac8333622f217e0da13bc577";
+
+    mozilla = pkgs.callPackage ("${mozillapkgs}/package-set.nix") {};
+
+    many-framework-rust = (mozilla.rustChannelOf {
+      date = "2022-07-28";
+      channel = "nightly";
+      sha256 = "sha256-YNNAzlp1G1bBPg3Jf+FLeJ6oLbeAUMnX072HtlgFz8M=";
+    }).rust;
+    naersk-lib = naersk.lib."${system}".override {
+      cargo = many-framework-rust;
+      rustc = many-framework-rust;
+    };
     rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
         name = "cryptoki-sys";
@@ -60,17 +77,14 @@
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
 
-          many-framework-pkgs = pkgs.rustBuilder.makePackageSet {
-            rustVersion = "2022-07-27";
-            rustChannel = "nightly";
-            packageFun = import ./many-framework/Cargo.nix;
-            workspaceSrc = final.fetchFromGitHub {
+          many-framework = naersk-lib.buildPackage {
+            pname = "many-framework";
+            root = final.fetchFromGitHub {
               owner = "liftedinit";
               repo = "many-framework";
               rev = many-framework-rev;
               sha256 = "sha256-RY5cqa35J+Cmps8LG4Evvq6cH0oJkrOLhoWwdMJymMk=";
             };
-            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
         })
       ];
@@ -78,7 +92,7 @@
   in {
     packages = {
       many-rs = (pkgs.many-rs-pkgs.workspace.many {}).bin;
-      many-framework = (pkgs.many-framework-pkgs.workspace.many-ledger {}).bin;
+      many-framework = pkgs.many-framework;
     };
     devShells = {
       many-rs = pkgs.many-rs-pkgs.workspaceShell {
@@ -92,21 +106,20 @@
           pkgs.rust-analyzer
         ];
       };
-      many-framework = (pkgs.many-framework-pkgs.workspaceShell {
+      many-framework = pkgs.mkShell {
+        inputsFrom = [ pkgs.many-framework ];
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
+          pkgs.pkg-config
         ];
         buildInputs = [
           pkgs.rust-analyzer
+          pkgs.openssl
         ];
-      }).overrideAttrs (final: prev:  {
-        # Workaround for bug in cargo2nix
-        # See https://github.com/cargo2nix/cargo2nix/issues/238
-        propagatedBuildInputs = pkgs.lib.attrsets.attrValues (builtins.listToAttrs (builtins.map (x: { name = x.name; value = x; }) prev.propagatedBuildInputs));
-      });
+      };
     };
   });
 }
