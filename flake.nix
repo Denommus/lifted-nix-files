@@ -71,7 +71,9 @@
           many-framework-rust = (final.mozilla.rustChannelOf {
             rustToolchain = "${final.many-framework-src}/rust-toolchain.toml";
             sha256 = "sha256-/9B09wuqRTLWJEXsDcS5a5qGZYmsWhhLXMmBTZieDXM=";
-          }).rust;
+          }).rust.override {
+            extensions = ["rust-src"];
+          };
 
           naersk-lib = naersk.lib."${system}".override {
             cargo = final.many-framework-rust;
