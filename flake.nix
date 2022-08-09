@@ -54,15 +54,15 @@
         cargo2nix.overlays.default
 
         (final: prev: {
-          many-rs-pkgs = pkgs.rustBuilder.makePackageSet {
-            rustVersion = "1.62.0";
+          many-rs-pkgs = let
+            rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
+          in pkgs.rustBuilder.makePackageSet {
+            rustVersion = rustToolchain.toolchain.channel;
             packageFun = import ./many-rs/Cargo.nix;
-            workspaceSrc = final.fetchFromGitHub {
-              owner = "liftedinit";
-              repo = "many-rs";
-              rev = many-rs-rev;
-              sha256 = "sha256-f6ULbOt3mb5IBeaXWDqttPWBWH1/0r3URFJ+HQVtcNs=";
-            };
+            workspaceSrc = final.many-rs-src;
+            extraRustComponents = rustToolchain.toolchain.components ++ [
+              "rust-src"
+            ];
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
 
@@ -78,6 +78,13 @@
           naersk-lib = naersk.lib."${system}".override {
             cargo = final.many-framework-rust;
             rustc = final.many-framework-rust;
+          };
+
+          many-rs-src = final.fetchFromGitHub {
+            owner = "liftedinit";
+            repo = "many-rs";
+            rev = many-rs-rev;
+            sha256 = "sha256-f6ULbOt3mb5IBeaXWDqttPWBWH1/0r3URFJ+HQVtcNs=";
           };
 
           many-framework-src = final.fetchFromGitHub {
