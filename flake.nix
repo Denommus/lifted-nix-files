@@ -15,8 +15,8 @@
   outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
-    many-rs-rev = "20541988a8722a9bd10e2bcf3cb84dc17e1775e4";
-    many-framework-rev = "a8804085bcc28b75ac8333622f217e0da13bc577";
+    many-rs-rev = "79730557ecb0378b8919ea9ccd02f20b41dfe0ce";
+    many-framework-rev = "cff0cf1f614a5b51918136e05d9f1c7d96e79c30";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
 
     rust-overrides = pkgs: [
@@ -96,19 +96,30 @@
             owner = "liftedinit";
             repo = "many-rs";
             rev = many-rs-rev;
-            sha256 = "sha256-f6ULbOt3mb5IBeaXWDqttPWBWH1/0r3URFJ+HQVtcNs=";
+            sha256 = "sha256-ywxVwg9LAuy0t608l2yp30JBoibau3An5eyhQheL+Os=";
           };
 
           many-framework-src = final.fetchFromGitHub {
             owner = "liftedinit";
             repo = "many-framework";
             rev = many-framework-rev;
-            sha256 = "sha256-RY5cqa35J+Cmps8LG4Evvq6cH0oJkrOLhoWwdMJymMk=";
+            sha256 = "sha256-DsyRTV9DN8DLNziX8/Az3E6TACVUhZ7yJlgGQYPYiYA=";
           };
 
           many-framework = final.naersk-lib.buildPackage {
-            pname = "many-framework";
+            name = "many-framework";
             root = final.many-framework-src;
+            buildInputs = [
+              final.pkg-config
+              final.openssl
+              final.llvmPackages.libcxxClang
+            ];
+            prePatch = ''
+              substituteInPlace src/many-ledger/build.rs --replace 'vergen(config).expect("Vergen could not run.")' ""
+            '';
+            VERGEN_GIT_SHA = many-framework-rev;
+
+            LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
           };
 
           specification-src = final.fetchFromGitHub {
