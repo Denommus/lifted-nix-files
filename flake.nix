@@ -17,6 +17,7 @@
   let
     many-rs-rev = "20541988a8722a9bd10e2bcf3cb84dc17e1775e4";
     many-framework-rev = "a8804085bcc28b75ac8333622f217e0da13bc577";
+    specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
 
     rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
@@ -56,7 +57,7 @@
         (final: prev: {
           many-rs-pkgs = let
             rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
-          in pkgs.rustBuilder.makePackageSet {
+          in final.rustBuilder.makePackageSet {
             rustVersion = rustToolchain.toolchain.channel;
             packageFun = import ./many-rs/Cargo.nix;
             workspaceSrc = final.many-rs-src;
@@ -64,6 +65,17 @@
               "rust-src"
             ];
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+          };
+
+          specification-pkgs = let
+            rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
+          in final.rustBuilder.makePackageSet {
+            rustVersion = rustToolchain.toolchain.channel;
+            packageFun = import ./specification/Cargo.nix;
+            workspaceSrc = final.specification-src;
+            extraRustComponents = rustToolchain.toolchain.components ++ [
+              "rust-src"
+            ];
           };
 
           mozilla = final.callPackage ("${mozillapkgs}/package-set.nix") {};
@@ -98,6 +110,13 @@
             pname = "many-framework";
             root = final.many-framework-src;
           };
+
+          specification-src = final.fetchFromGitHub {
+            owner = "many-protocol";
+            repo = "specification";
+            rev = specification-rev;
+            sha256 = "sha256-ngoN2iSg9hldblqaoJA3n3TC4ATTzHPfvNW9jgbytt0=";
+          };
         })
       ];
     };
@@ -105,9 +124,21 @@
     packages = {
       many-rs = (pkgs.many-rs-pkgs.workspace.many {}).bin;
       many-framework = pkgs.many-framework;
+      specification = (pkgs.specification-pkgs.workspace.spectests {}).bin;
     };
     devShells = {
       many-rs = pkgs.many-rs-pkgs.workspaceShell {
+        shellHook = ''
+          export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
+        '';
+        nativeBuildInputs = [
+          pkgs.llvmPackages.libcxxClang
+        ];
+        buildInputs = [
+          pkgs.rust-analyzer
+        ];
+      };
+      specification = pkgs.specification-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
