@@ -82,7 +82,8 @@
 
           many-framework-rust = (final.mozilla.rustChannelOf {
             rustToolchain = "${final.many-framework-src}/rust-toolchain.toml";
-            sha256 = "sha256-kHjy3d6GgqjU2VZaIWJN+Ih2D5JQJ7b5/3kKU5Rb6H4=";
+            sha256 = "sha256-dtjZ7BngHtmEsPplZYzOKIoxrFyoFVRQLPA/a4nk8xw=";
+            date = "2022-08-21";
           }).rust.override {
             extensions = ["rust-src"];
           };
