@@ -142,12 +142,14 @@
       many-rs = pkgs.many-rs-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
+          export PKCS11_SOFTHSM2_MODULE=${pkgs.softhsm}/lib/softhsm/libsofthsm2.so
         '';
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
         ];
         buildInputs = [
           pkgs.rust-analyzer
+          pkgs.softhsm
         ];
       };
       specification = pkgs.specification-pkgs.workspaceShell {
