@@ -16,7 +16,7 @@
   flake-utils.lib.eachDefaultSystem (system:
   let
     many-rs-rev = "79730557ecb0378b8919ea9ccd02f20b41dfe0ce";
-    many-framework-rev = "cff0cf1f614a5b51918136e05d9f1c7d96e79c30";
+    many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
 
     rust-overrides = pkgs: [
@@ -104,7 +104,7 @@
             owner = "liftedinit";
             repo = "many-framework";
             rev = many-framework-rev;
-            sha256 = "sha256-DsyRTV9DN8DLNziX8/Az3E6TACVUhZ7yJlgGQYPYiYA=";
+            sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
           };
 
           many-framework = final.naersk-lib.buildPackage {
