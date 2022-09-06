@@ -175,6 +175,7 @@
         buildInputs = [
           pkgs.rust-analyzer
           pkgs.openssl
+          pkgs.bats
         ];
       };
     };
