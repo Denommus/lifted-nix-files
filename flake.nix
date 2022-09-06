@@ -177,6 +177,7 @@
           pkgs.openssl
           pkgs.bats
           pkgs.tendermint
+          pkgs.tmux
           ((pkgs.many-rs-pkgs.workspace.many {}).bin)
         ];
       };
