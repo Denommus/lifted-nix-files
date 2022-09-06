@@ -176,6 +176,7 @@
           pkgs.rust-analyzer
           pkgs.openssl
           pkgs.bats
+          ((pkgs.many-rs-pkgs.workspace.many {}).bin)
         ];
       };
     };
