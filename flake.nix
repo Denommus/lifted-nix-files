@@ -74,6 +74,13 @@
             packageFun = import ./many-fuzzy/Cargo.nix;
             workspaceSrc = final.many-fuzzy-src;
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+            extraRustComponents = [
+              "rustfmt"
+              "rustc"
+              "clippy"
+              "llvm-tools-preview"
+              "rust-src"
+            ];
           };
 
           specification-pkgs = let
@@ -170,6 +177,17 @@
         ];
       };
       specification = pkgs.specification-pkgs.workspaceShell {
+        shellHook = ''
+          export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
+        '';
+        nativeBuildInputs = [
+          pkgs.llvmPackages.libcxxClang
+        ];
+        buildInputs = [
+          pkgs.rust-analyzer
+        ];
+      };
+      many-fuzzy = pkgs.many-fuzzy-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
