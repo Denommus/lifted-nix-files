@@ -113,7 +113,7 @@
             owner = "liftedinit";
             repo = "many-rs";
             rev = many-rs-rev;
-            sha256 = "sha256-ywxVwg9LAuy0t608l2yp30JBoibau3An5eyhQheL+Os=";
+            sha256 = "sha256-4mROIvmj8vVyujRIX0l0nr1x9FHROo7RwMGP7hlYrX4=";
           };
 
           many-framework-src = final.fetchFromGitHub {
