@@ -18,6 +18,7 @@
     many-rs-rev = "79730557ecb0378b8919ea9ccd02f20b41dfe0ce";
     many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
+    many-fuzzy-rev = "9137cda28387c834e0ba897d54697ac51f41e6d0";
 
     rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
@@ -67,6 +68,14 @@
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
           };
 
+          many-fuzzy-pkgs = final.rustBuilder.makePackageSet {
+            rustVersion = "2022-08-21";
+            rustChannel = "nightly";
+            packageFun = import ./many-fuzzy/Cargo.nix;
+            workspaceSrc = final.many-fuzzy-src;
+            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+          };
+
           specification-pkgs = let
             rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
           in final.rustBuilder.makePackageSet {
@@ -107,6 +116,13 @@
             sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
           };
 
+          many-fuzzy-src = final.fetchFromGitHub {
+            owner = "liftedinit";
+            repo = "many-fuzzy";
+            rev = many-fuzzy-rev;
+            sha256 = "sha256-z0PL1AjolPf+qOtbrpUf7uOeNb7lrsCzBUWXDYTBV7U=";
+          };
+
           many-framework = final.naersk-lib.buildPackage {
             name = "many-framework";
             root = final.many-framework-src;
@@ -136,6 +152,7 @@
     packages = {
       many-rs = (pkgs.many-rs-pkgs.workspace.many {}).bin;
       many-framework = pkgs.many-framework;
+      many-fuzzy = (pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin;
       specification = (pkgs.specification-pkgs.workspace.spectests {}).bin;
     };
     devShells = {
@@ -179,6 +196,7 @@
           pkgs.tendermint
           pkgs.tmux
           ((pkgs.many-rs-pkgs.workspace.many {}).bin)
+          ((pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin)
         ];
       };
     };
