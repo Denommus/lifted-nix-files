@@ -15,7 +15,7 @@
   outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
-    many-rs-rev = "79730557ecb0378b8919ea9ccd02f20b41dfe0ce";
+    many-rs-rev = "714c72e71a8f6d8befe46a75ee9d8ece5bd7eb88";
     many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
     many-fuzzy-rev = "9137cda28387c834e0ba897d54697ac51f41e6d0";
