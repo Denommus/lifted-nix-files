@@ -16,10 +16,14 @@
   outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
-    many-rs-rev = "714c72e71a8f6d8befe46a75ee9d8ece5bd7eb88";
+    many-rs-rev = "cda2c4bf2081f1aa1f6a87d4057b174e6c688f53";
+    many-rs-sha256 = "sha256-98mjQ9Qn36qez+Oi/tQiFIyENsjsN8PLNoDAELRheio=";
     many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
+    many-framework-sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
+    specification-sha256 = "sha256-ngoN2iSg9hldblqaoJA3n3TC4ATTzHPfvNW9jgbytt0=";
     many-fuzzy-rev = "9137cda28387c834e0ba897d54697ac51f41e6d0";
+    many-fuzzy-sha256 = "sha256-z0PL1AjolPf+qOtbrpUf7uOeNb7lrsCzBUWXDYTBV7U=";
 
     rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
@@ -114,21 +118,21 @@
             owner = "liftedinit";
             repo = "many-rs";
             rev = many-rs-rev;
-            sha256 = "sha256-4mROIvmj8vVyujRIX0l0nr1x9FHROo7RwMGP7hlYrX4=";
+            sha256 = many-rs-sha256;
           };
 
           many-framework-src = final.fetchFromGitHub {
             owner = "liftedinit";
             repo = "many-framework";
             rev = many-framework-rev;
-            sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
+            sha256 = many-framework-sha256;
           };
 
           many-fuzzy-src = final.fetchFromGitHub {
             owner = "liftedinit";
             repo = "many-fuzzy";
             rev = many-fuzzy-rev;
-            sha256 = "sha256-z0PL1AjolPf+qOtbrpUf7uOeNb7lrsCzBUWXDYTBV7U=";
+            sha256 = many-fuzzy-sha256;
           };
 
           many-framework = final.naersk-lib.buildPackage {
@@ -151,7 +155,7 @@
             owner = "many-protocol";
             repo = "specification";
             rev = specification-rev;
-            sha256 = "sha256-ngoN2iSg9hldblqaoJA3n3TC4ATTzHPfvNW9jgbytt0=";
+            sha256 = specification-sha256;
           };
         })
       ];
