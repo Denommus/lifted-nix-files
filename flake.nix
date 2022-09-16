@@ -6,6 +6,7 @@
     rust-overlay.url = "github:oxalica/rust-overlay";
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
     naersk.url = "github:nix-community/naersk";
+    naersk.inputs.nixpkgs.follows = "nixpkgs";
     mozillapkgs = {
       url = "github:mozilla/nixpkgs-mozilla";
       flake = false;
