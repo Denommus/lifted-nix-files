@@ -16,8 +16,8 @@
   outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
-    many-rs-rev = "cda2c4bf2081f1aa1f6a87d4057b174e6c688f53";
-    many-rs-sha256 = "sha256-98mjQ9Qn36qez+Oi/tQiFIyENsjsN8PLNoDAELRheio=";
+    many-rs-rev = "843336d86ef8b8ee4cb5b68659c630f58b9d7b4a";
+    many-rs-sha256 = "sha256-Vb5WT1O46Ntz+YbYEUi6SBDxcSgvqbbu+EuU1k/Jom0=";
     many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
     many-framework-sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
