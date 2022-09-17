@@ -7,13 +7,9 @@
     cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
-    mozillapkgs = {
-      url = "github:mozilla/nixpkgs-mozilla";
-      flake = false;
-    };
   };
 
-  outputs = { cargo2nix, flake-utils, nixpkgs, naersk, mozillapkgs, ... }:
+  outputs = { cargo2nix, flake-utils, nixpkgs, naersk, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
     many-rs-rev = "843336d86ef8b8ee4cb5b68659c630f58b9d7b4a";
@@ -74,8 +70,8 @@
           };
 
           many-fuzzy-pkgs = final.rustBuilder.makePackageSet {
-            rustVersion = "2022-08-21";
-            rustChannel = "nightly";
+            rustVersion = "1.63.0";
+            rustChannel = "stable";
             packageFun = import ./many-fuzzy/Cargo.nix;
             workspaceSrc = final.many-fuzzy-src;
             packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
@@ -99,14 +95,8 @@
             ];
           };
 
-          mozilla = final.callPackage ("${mozillapkgs}/package-set.nix") {};
-
-          many-framework-rust = (final.mozilla.rustChannelOf {
-            rustToolchain = "${final.many-framework-src}/rust-toolchain.toml";
-            sha256 = "sha256-uUo2FVXepMXPkD2cg39YpO4hS+kwYPHCrjhl7PF6gF4=";
-            date = "2022-08-21";
-          }).rust.override {
-            extensions = ["rust-src"];
+          many-framework-rust = (final.rust-bin.fromRustupToolchainFile "${final.many-framework-src}/rust-toolchain.toml").override {
+            extensions = [ "rust-src" ];
           };
 
           naersk-lib = naersk.lib."${system}".override {
