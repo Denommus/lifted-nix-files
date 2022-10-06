@@ -194,8 +194,8 @@
           pkgs.bats
           pkgs.tendermint
           pkgs.tmux
-          ((pkgs.many-rs-pkgs.workspace.many {}).bin)
-          ((pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin)
+          ((many-rs-pkgs.workspace.many {}).bin)
+          ((many-fuzzy-pkgs.workspace.many-fuzzy {}).bin)
         ];
       };
     };
