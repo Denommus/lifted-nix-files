@@ -106,9 +106,10 @@
       packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
     };
 
-    many-fuzzy-pkgs = pkgs.rustBuilder.makePackageSet {
-      rustVersion = "1.63.0";
-      rustChannel = "stable";
+    many-fuzzy-pkgs = let
+      rustToolchain = builtins.fromTOML (builtins.readFile "${many-rs-src}/rust-toolchain.toml");
+    in pkgs.rustBuilder.makePackageSet {
+      rustChannel = rustToolchain.toolchain.channel;
       packageFun = import ./many-fuzzy/Cargo.nix;
       workspaceSrc = many-fuzzy-src;
       packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
