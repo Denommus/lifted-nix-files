@@ -112,6 +112,7 @@
       packageFun = import ./many-fuzzy/Cargo.nix;
       workspaceSrc = many-fuzzy-src;
       packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+      ignoreLockHash = true;
       extraRustComponents = [
         "rustfmt"
         "rustc"
