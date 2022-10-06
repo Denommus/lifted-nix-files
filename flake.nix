@@ -1,10 +1,8 @@
 {
   inputs = {
-    cargo2nix.url = "github:cargo2nix/cargo2nix/release-0.11.0";
+    cargo2nix.url = "github:cargo2nix/cargo2nix/unstable";
     flake-utils.follows = "cargo2nix/flake-utils";
     nixpkgs.follows = "cargo2nix/nixpkgs";
-    rust-overlay.url = "github:oxalica/rust-overlay";
-    cargo2nix.inputs.rust-overlay.follows = "rust-overlay";
     naersk.url = "github:nix-community/naersk";
     naersk.inputs.nixpkgs.follows = "nixpkgs";
   };
@@ -12,14 +10,47 @@
   outputs = { cargo2nix, flake-utils, nixpkgs, naersk, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
-    many-rs-rev = "843336d86ef8b8ee4cb5b68659c630f58b9d7b4a";
-    many-rs-sha256 = "sha256-Vb5WT1O46Ntz+YbYEUi6SBDxcSgvqbbu+EuU1k/Jom0=";
-    many-framework-rev = "f809ad474858d4e660f9082a9e90a7324f38f8b7";
-    many-framework-sha256 = "sha256-EBvyKp0L13Wu/Ce+772Pkt3BEd46aSxeHlyjEK3LdGM=";
+    many-rs-rev = "4a4de79e2e90a55b128584bc1d6e43b3415f8f14";
+    many-rs-sha256 = "sha256-pHjHmWUmFLk46jDrCSztFmbxJzggJkYqn2yknmJ6CV4=";
+    many-framework-rev = "957c6c77018381cc5706b27a010c85c57c12acce";
+    many-framework-sha256 = "sha256-LjutJecDensP6GavPoPztvLKIAJ2lqut+sEf/F3n8Gk=";
     specification-rev = "6ba25eebec3493340e6537682eb360ba24046042";
     specification-sha256 = "sha256-ngoN2iSg9hldblqaoJA3n3TC4ATTzHPfvNW9jgbytt0=";
     many-fuzzy-rev = "9137cda28387c834e0ba897d54697ac51f41e6d0";
     many-fuzzy-sha256 = "sha256-z0PL1AjolPf+qOtbrpUf7uOeNb7lrsCzBUWXDYTBV7U=";
+
+    pkgs = import nixpkgs {
+      inherit system;
+      overlays = [ cargo2nix.overlays.default ];
+    };
+
+    many-rs-src = pkgs.fetchFromGitHub {
+      owner = "liftedinit";
+      repo = "many-rs";
+      rev = many-rs-rev;
+      sha256 = many-rs-sha256;
+    };
+
+    many-framework-src = pkgs.fetchFromGitHub {
+      owner = "liftedinit";
+      repo = "many-framework";
+      rev = many-framework-rev;
+      sha256 = many-framework-sha256;
+    };
+
+    many-fuzzy-src = pkgs.fetchFromGitHub {
+      owner = "liftedinit";
+      repo = "many-fuzzy";
+      rev = many-fuzzy-rev;
+      sha256 = many-fuzzy-sha256;
+    };
+
+    specification-src = pkgs.fetchFromGitHub {
+      owner = "many-protocol";
+      repo = "specification";
+      rev = specification-rev;
+      sha256 = specification-sha256;
+    };
 
     rust-overrides = pkgs: [
       (pkgs.rustBuilder.rustLib.makeOverride {
@@ -51,109 +82,67 @@
       })
     ];
 
-    pkgs = import nixpkgs {
-      inherit system;
-      overlays = [
-        cargo2nix.overlays.default
+    many-rs-pkgs = let
+      rustToolchain = builtins.fromTOML (builtins.readFile "${many-rs-src}/rust-toolchain.toml");
+    in pkgs.rustBuilder.makePackageSet {
+      rustVersion = rustToolchain.toolchain.channel;
+      packageFun = import ./many-rs/Cargo.nix;
+      workspaceSrc = many-rs-src;
+      extraRustComponents = rustToolchain.toolchain.components ++ [
+        "rust-src"
+      ];
+      packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+    };
 
-        (final: prev: {
-          many-rs-pkgs = let
-            rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
-          in final.rustBuilder.makePackageSet {
-            rustVersion = rustToolchain.toolchain.channel;
-            packageFun = import ./many-rs/Cargo.nix;
-            workspaceSrc = final.many-rs-src;
-            extraRustComponents = rustToolchain.toolchain.components ++ [
-              "rust-src"
-            ];
-            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
-          };
+    many-framework-pkgs = let
+      rustToolchain = builtins.fromTOML (builtins.readFile "${many-framework-src}/rust-toolchain.toml");
+    in pkgs.rustBuilder.makePackageSet {
+      rustChannel = rustToolchain.toolchain.channel;
+      packageFun = import ./many-framework/Cargo.nix;
+      workspaceSrc = many-framework-src;
+      extraRustComponents = rustToolchain.toolchain.components ++ [
+        "rust-src"
+      ];
+      packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+    };
 
-          many-fuzzy-pkgs = final.rustBuilder.makePackageSet {
-            rustVersion = "1.63.0";
-            rustChannel = "stable";
-            packageFun = import ./many-fuzzy/Cargo.nix;
-            workspaceSrc = final.many-fuzzy-src;
-            packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
-            extraRustComponents = [
-              "rustfmt"
-              "rustc"
-              "clippy"
-              "llvm-tools-preview"
-              "rust-src"
-            ];
-          };
+    many-fuzzy-pkgs = pkgs.rustBuilder.makePackageSet {
+      rustVersion = "1.63.0";
+      rustChannel = "stable";
+      packageFun = import ./many-fuzzy/Cargo.nix;
+      workspaceSrc = many-fuzzy-src;
+      packageOverrides = pkgs: pkgs.rustBuilder.overrides.all ++ (rust-overrides pkgs);
+      extraRustComponents = [
+        "rustfmt"
+        "rustc"
+        "clippy"
+        "llvm-tools-preview"
+        "rust-src"
+      ];
+    };
 
-          specification-pkgs = let
-            rustToolchain = builtins.fromTOML (builtins.readFile "${final.many-rs-src}/rust-toolchain.toml");
-          in final.rustBuilder.makePackageSet {
-            rustVersion = rustToolchain.toolchain.channel;
-            packageFun = import ./specification/Cargo.nix;
-            workspaceSrc = final.specification-src;
-            extraRustComponents = rustToolchain.toolchain.components ++ [
-              "rust-src"
-            ];
-          };
-
-          many-framework-rust = (final.rust-bin.fromRustupToolchainFile "${final.many-framework-src}/rust-toolchain.toml").override {
-            extensions = [ "rust-src" ];
-          };
-
-          naersk-lib = naersk.lib."${system}".override {
-            cargo = final.many-framework-rust;
-            rustc = final.many-framework-rust;
-          };
-
-          many-rs-src = final.fetchFromGitHub {
-            owner = "liftedinit";
-            repo = "many-rs";
-            rev = many-rs-rev;
-            sha256 = many-rs-sha256;
-          };
-
-          many-framework-src = final.fetchFromGitHub {
-            owner = "liftedinit";
-            repo = "many-framework";
-            rev = many-framework-rev;
-            sha256 = many-framework-sha256;
-          };
-
-          many-fuzzy-src = final.fetchFromGitHub {
-            owner = "liftedinit";
-            repo = "many-fuzzy";
-            rev = many-fuzzy-rev;
-            sha256 = many-fuzzy-sha256;
-          };
-
-          many-framework = final.naersk-lib.buildPackage {
-            name = "many-framework";
-            root = final.many-framework-src;
-            buildInputs = [
-              final.pkg-config
-              final.openssl
-              final.llvmPackages.libcxxClang
-            ];
-            prePatch = ''
-              substituteInPlace src/many-ledger/build.rs --replace 'vergen(config).expect("Vergen could not run.")' ""
-            '';
-            VERGEN_GIT_SHA = many-framework-rev;
-
-            LIBCLANG_PATH = "${final.llvmPackages.libclang.lib}/lib";
-          };
-
-          specification-src = final.fetchFromGitHub {
-            owner = "many-protocol";
-            repo = "specification";
-            rev = specification-rev;
-            sha256 = specification-sha256;
-          };
-        })
+    specification-pkgs = let
+      rustToolchain = builtins.fromTOML (builtins.readFile "${many-rs-src}/rust-toolchain.toml");
+    in pkgs.rustBuilder.makePackageSet {
+      rustVersion = rustToolchain.toolchain.channel;
+      packageFun = import ./specification/Cargo.nix;
+      workspaceSrc = pkgs.specification-src;
+      extraRustComponents = rustToolchain.toolchain.components ++ [
+        "rust-src"
       ];
     };
   in {
     packages = {
-      many-rs = (pkgs.many-rs-pkgs.workspace.many {}).bin;
-      many-framework = pkgs.many-framework;
+      many-rs = (many-rs-pkgs.workspace.many {}).bin;
+      many-framework = pkgs.buildEnv {
+        name = "many-framework";
+        paths = [
+          (many-framework-pkgs.workspace.ledger {}).bin
+          (many-framework-pkgs.workspace.many-ledger {}).bin
+          (many-framework-pkgs.workspace.many-abci {}).bin
+          (many-framework-pkgs.workspace.many-kvstore {}).bin
+        ];
+      };
       many-fuzzy = (pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin;
       specification = (pkgs.specification-pkgs.workspace.spectests {}).bin;
     };
@@ -193,23 +182,15 @@
           pkgs.rust-analyzer
         ];
       };
-      many-framework = pkgs.mkShell {
-        inputsFrom = [ pkgs.many-framework ];
+      many-framework = pkgs.many-framework-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
         nativeBuildInputs = [
           pkgs.llvmPackages.libcxxClang
-          pkgs.pkg-config
         ];
         buildInputs = [
           pkgs.rust-analyzer
-          pkgs.openssl
-          pkgs.bats
-          pkgs.tendermint
-          pkgs.tmux
-          ((pkgs.many-rs-pkgs.workspace.many {}).bin)
-          ((pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin)
         ];
       };
     };
