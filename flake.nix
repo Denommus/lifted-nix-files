@@ -143,11 +143,11 @@
           (many-framework-pkgs.workspace.many-kvstore {}).bin
         ];
       };
-      many-fuzzy = (pkgs.many-fuzzy-pkgs.workspace.many-fuzzy {}).bin;
+      many-fuzzy = (many-fuzzy-pkgs.workspace.many-fuzzy {}).bin;
       specification = (pkgs.specification-pkgs.workspace.spectests {}).bin;
     };
     devShells = {
-      many-rs = pkgs.many-rs-pkgs.workspaceShell {
+      many-rs = many-rs-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
           export PKCS11_SOFTHSM2_MODULE=${pkgs.softhsm}/lib/softhsm/libsofthsm2.so
@@ -171,7 +171,7 @@
           pkgs.rust-analyzer
         ];
       };
-      many-fuzzy = pkgs.many-fuzzy-pkgs.workspaceShell {
+      many-fuzzy = many-fuzzy-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
@@ -182,7 +182,7 @@
           pkgs.rust-analyzer
         ];
       };
-      many-framework = pkgs.many-framework-pkgs.workspaceShell {
+      many-framework = many-framework-pkgs.workspaceShell {
         shellHook = ''
           export LIBCLANG_PATH=${pkgs.llvmPackages.libclang.lib}/lib
         '';
