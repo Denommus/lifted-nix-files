@@ -3,11 +3,9 @@
     cargo2nix.url = "github:cargo2nix/cargo2nix/unstable";
     flake-utils.follows = "cargo2nix/flake-utils";
     nixpkgs.follows = "cargo2nix/nixpkgs";
-    naersk.url = "github:nix-community/naersk";
-    naersk.inputs.nixpkgs.follows = "nixpkgs";
   };
 
-  outputs = { cargo2nix, flake-utils, nixpkgs, naersk, ... }:
+  outputs = { cargo2nix, flake-utils, nixpkgs, ... }:
   flake-utils.lib.eachDefaultSystem (system:
   let
     many-rs-rev = "4a4de79e2e90a55b128584bc1d6e43b3415f8f14";
